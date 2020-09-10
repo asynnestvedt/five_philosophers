@@ -27,14 +27,14 @@ type Spork struct{ sync.Mutex }
 
 // Philo -
 type Philo struct {
-	id              int
-	leftSpork, rightSpork *Spork
+	id             int
+	lSpork, rSpork *Spork
 }
 
-func host(ch chan bool) {
-	ch <- true
-	ch <- true
-	<-ch
+func host(ch chan bool, concurrency int) {
+	for i := 0; i < concurrency; i++ {
+		ch <- true
+	}
 }
 
 func (p Philo) eat(ch chan bool, wg *sync.WaitGroup, meals int) {
@@ -42,18 +42,18 @@ func (p Philo) eat(ch chan bool, wg *sync.WaitGroup, meals int) {
 	for i := 0; i < meals; i++ {
 		<-ch
 		// modifying the following instruction to occur BEFORE the lock since it was likely written
-                // incorrectly in the project requirements
+		// incorrectly in the project requirements
 		// "When a philosopher starts eating (after it has obtained necessary locks) it prints
 		//   “starting to eat <number>”" */
 		fmt.Printf("starting to eat %d\n", p.id)
 
-		p.leftSpork.Lock()
-		p.rightSpork.Lock()
+		p.lSpork.Lock()
+		p.rSpork.Lock()
 
 		fmt.Printf("finishing eating %d\n", p.id)
 
-		p.rightSpork.Unlock()
-		p.leftSpork.Unlock()
+		p.rSpork.Unlock()
+		p.lSpork.Unlock()
 		ch <- true
 		wg.Done()
 	}
@@ -77,7 +77,7 @@ func main() {
 	}
 
 	wg.Add(PersonsCount * MealsPerPerson)
-	go host(ch)
+	go host(ch, 2)
 
 	for _, p := range philos {
 		go p.eat(ch, &wg, MealsPerPerson)
