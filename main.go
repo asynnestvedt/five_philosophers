@@ -28,7 +28,7 @@ type Spork struct{ sync.Mutex }
 // Philo -
 type Philo struct {
 	id              int
-	leftCS, rightCS *Spork
+	leftSpork, rightSpork *Spork
 }
 
 func host(ch chan bool) {
@@ -46,13 +46,13 @@ func (p Philo) eat(ch chan bool, wg *sync.WaitGroup, meals int) {
 		//  “starting to eat <number>” */
 		fmt.Printf("starting to eat %d\n", p.id)
 
-		p.leftCS.Lock()
-		p.rightCS.Lock()
+		p.leftSpork.Lock()
+		p.rightSpork.Lock()
 
 		fmt.Printf("finishing eating %d\n", p.id)
 
-		p.rightCS.Unlock()
-		p.leftCS.Unlock()
+		p.rightSpork.Unlock()
+		p.leftSpork.Unlock()
 		ch <- true
 		wg.Done()
 	}
